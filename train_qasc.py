@@ -172,11 +172,11 @@ def train_or_eval_model(model, dataloader, optimizer=None, split="Train"):
         
         mapper = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
         instance_preds = [item for sublist in preds for item in sublist]
-        instance_preds = [mapper[item] for item in instance_preds]
+        instance_preds_ = [mapper[item] for item in instance_preds]
         
         instance_labels = np.array(all_labels_cls).reshape(-1, args.num_choices).argmax(1)
         instance_acc = round(accuracy_score(instance_labels, instance_preds), 4)
-        print ("Test preds frequency:", dict(pd.Series(instance_preds).value_counts()))
+        print ("Test preds frequency:", dict(pd.Series(instance_preds_).value_counts()))
         return instance_preds, instance_acc
     
     
