@@ -1,4 +1,5 @@
 # coding=utf-8
+import time
 from transformers import T5Tokenizer
 from tqdm import trange
 import os
@@ -127,6 +128,9 @@ def eval(model, test_examples, tokenizer, eval_batch_size, choice_num, max_len, 
 #os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 if __name__ == '__main__':
+
+    start_time = time.time()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_path",
                         default='t5-base',
@@ -311,3 +315,5 @@ if __name__ == '__main__':
 
     print('best dev acc:', best_dev_acc, 'best_test_acc:', best_test_acc,
           'best_dev_rouge_score:', best_dev_rouge_score, 'best_test_rouge_score:', best_test_rouge_score)
+    
+    print("--- Execution time : %s seconds ---" % (time.time() - start_time))

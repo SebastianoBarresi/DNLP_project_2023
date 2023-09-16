@@ -176,6 +176,8 @@ def train_or_eval_model(model, dataloader, optimizer=None, split="Train"):
     
     
 if __name__ == "__main__":
+    
+    start_time = time.time()
 
     parser = ArgumentParser()
     parser.add_argument("--lr", type=float, default=3e-6, help="Learning rate for transformers.")
@@ -186,7 +188,7 @@ if __name__ == "__main__":
     parser.add_argument("--eval-bs", type=int, default=8, help="Batch size.")
     parser.add_argument("--epochs", type=int, default=8, help="Number of epochs.")
     parser.add_argument("--name", type=str, default="roberta-large", help="Which model.")
-    parser.add_argument("--shuffle", type=str, action="store_true", default=False, help="Shuffle train data such that positive and negative \
+    parser.add_argument("--shuffle", action="store_true", default=False, help="Shuffle train data such that positive and negative \
         sequences of the same question are not necessarily in the same batch.")
     parser.add_argument("--input-format", type=str, default="1", help="How to format the input data.")
     parser.add_argument("--savings_path", type=str, default="./", help="Path to where save the results")
@@ -286,3 +288,5 @@ if __name__ == "__main__":
     lf = open(lf_name, "a")
     lf.write("-"*100 + "\n")
     lf.close()
+
+    print("--- Execution time : %s seconds ---" % (time.time() - start_time))
