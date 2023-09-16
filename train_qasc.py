@@ -72,13 +72,13 @@ class QASCDataset(Dataset):
     
 def configure_dataloaders(sep_token, train_batch_size=16, eval_batch_size=16, shuffle=False, input_format="1"):
     "Prepare dataloaders"
-    train_dataset = QASCDataset("data/qasc/train.jsonl", sep_token, input_format, True)
+    train_dataset = QASCDataset("data/qasc/in_hourse/train.jsonl", sep_token, input_format, True)
     train_loader = DataLoader(train_dataset, shuffle=shuffle, batch_size=train_batch_size, collate_fn=train_dataset.collate_fn)
 
-    val_dataset = QASCDataset("data/qasc/dev.jsonl", sep_token, input_format, False)
+    val_dataset = QASCDataset("data/qasc/in_hourse/dev.jsonl", sep_token, input_format, False)
     val_loader = DataLoader(val_dataset, shuffle=False, batch_size=eval_batch_size, collate_fn=val_dataset.collate_fn)
     
-    test_dataset = QASCDataset("data/qasc/test.jsonl", sep_token, input_format, False)
+    test_dataset = QASCDataset("data/qasc/in_hourse/test.jsonl", sep_token, input_format, False)
     test_loader = DataLoader(test_dataset, shuffle=False, batch_size=eval_batch_size, collate_fn=val_dataset.collate_fn)
 
     return train_loader, val_loader, test_loader
@@ -168,11 +168,16 @@ def train_or_eval_model(model, dataloader, optimizer=None, split="Train"):
         return avg_loss, acc, instance_acc, f1
     
     elif "Test" in split:
+        all_labels_cls = [item for sublist in labels_cls for item in sublist]
+        
         mapper = {0: "A", 1: "B", 2: "C", 3: "D", 4: "E", 5: "F", 6: "G", 7: "H"}
         instance_preds = [item for sublist in preds for item in sublist]
         instance_preds = [mapper[item] for item in instance_preds]
+        
+        instance_labels = np.array(all_labels_cls).reshape(-1, args.num_choices).argmax(1)
+        instance_acc = round(accuracy_score(instance_labels, instance_preds), 4)
         print ("Test preds frequency:", dict(pd.Series(instance_preds).value_counts()))
-        return instance_preds
+        return instance_preds, instance_acc
     
     
 if __name__ == "__main__":
@@ -259,7 +264,7 @@ if __name__ == "__main__":
         
         train_loss, train_acc, train_f1 = train_or_eval_model(model, train_loader, optimizer, "Train")
         val_loss, val_acc, val_ins_acc, val_f1 = train_or_eval_model(model, val_loader, split="Val")
-        test_preds = train_or_eval_model(model, test_loader, split="Test")
+        test_preds, pred_ins_acc = train_or_eval_model(model, test_loader, split="Test")
         
         if val_acc > dev_best_acc:
             save_model(output_model_path, model, optimizer)
@@ -270,7 +275,7 @@ if __name__ == "__main__":
         x = "Epoch {}: Loss: Train {}; Val {}".format(e+1, train_loss, val_loss)
         y1 = "Classification Acc: Train {}; Val {}".format(train_acc, val_acc)
         y2 = "Classification Macro F1: Train {}; Val {}".format(train_f1, val_f1)
-        z = "Instance Acc: Val {}".format(val_ins_acc)
+        z = "Instance Acc: Val {}, Test {}".format(val_ins_acc, pred_ins_acc)
             
         print (x)
         print (y1)
